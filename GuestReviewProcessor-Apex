@@ -1,0 +1,77 @@
+public class GuestReviewProcessor {
+
+    @InvocableMethod(
+        label='Process Guest Reviews'
+        description='Creates Guest Review records from Flows'
+    )
+    public static List<GuestReviewResponse> processReviews(List<GuestReviewRequest> requests) {
+
+        GuestReviewResponse response = new GuestReviewResponse();
+
+        try {
+            List<Guest_Review__c> reviews = new List<Guest_Review__c>();
+
+            for (GuestReviewRequest req : requests) {
+                Guest_Review__c gr = new Guest_Review__c(
+                    Contact__c = req.contact.Id,
+                    Experience__c = req.experience.Id,
+                    Rating__c = req.rating,
+                    Comments__c = req.review
+                );
+                reviews.add(gr);
+            }
+
+            insert reviews;
+
+            // Optional
+            // CampaignMemberController.createCampaignMemberforRelatedCampaigns();
+
+            response.message = 'Guest Review submitted successfully.';
+        }
+        catch (Exception e) {
+            response.message = 'Error: ' + e.getMessage();
+        }
+
+        return new List<GuestReviewResponse>{ response };
+    }
+
+    public class GuestReviewRequest {
+
+        @InvocableVariable(
+            label='Contact'
+            description='Guest Contact'
+            required=true
+        )
+        public Contact contact;
+
+        @InvocableVariable(
+            label='Experience'
+            description='Experience Record'
+            required=true
+        )
+        public Experience__c experience;
+
+        @InvocableVariable(
+            label='Review'
+            description='Guest Review'
+            required=true
+        )
+        public String review;
+
+        @InvocableVariable(
+            label='Rating'
+            description='Guest Rating'
+            required=true
+        )
+        public String rating;
+    }
+
+    public class GuestReviewResponse {
+
+        @InvocableVariable(
+            label='Status'
+            description='Display a successful or error message'
+        )
+        public String message;
+    }
+}
